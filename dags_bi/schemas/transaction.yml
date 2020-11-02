@@ -1,0 +1,20 @@
+name: Transaction
+version: 1
+description: >
+  A customer transaction at a specific time for a specific amount, for an optionally specified product
+on conflict: CreateNewVersion
+fields:
+  customer_id:
+    type: Unicode(256)
+    validators:
+      - NotNull
+  product_id:
+    type: Unicode(256)
+  transacted_at:
+    type: DateTime
+    validators:
+      - NotNull
+  amount:
+    type: Numeric(12, 2)
+    validators:
+      - NotNull

@@ -7,7 +7,6 @@ Business Intelligence module for the [snapflow](https://github.com/kvh/snapflow)
 #### Example
 
 ```python
-import pandas as pd
 import snapflow_bi as bi
 from snapflow import graph, produce
 from snapflow.testing.utils import str_as_dataframe

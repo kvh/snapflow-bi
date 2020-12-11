@@ -1,9 +1,12 @@
-from dags.core.module import DagsModule
+from typing import TypeVar
+from snapflow.core.module import SnapflowModule
 
 from .pipes.ltv import transaction_ltv_model
 from .pipes.tests import test_ltv
 
-module = DagsModule(
+Transaction = TypeVar("Transaction")
+
+module = SnapflowModule(
     "bi",
     py_module_path=__file__,
     py_module_name=__name__,

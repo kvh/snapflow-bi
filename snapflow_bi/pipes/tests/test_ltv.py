@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dags import Environment
-from dags.testing.utils import (
+from snapflow import Environment
+from snapflow.testing.utils import (
     DataInput,
     get_tmp_sqlite_db_url,
     produce_pipe_output_for_static_input,
@@ -9,7 +9,7 @@ from dags.testing.utils import (
 
 
 def test_ltv():
-    import dags_bi as bi
+    import snapflow_bi as bi
     input_data = """
         customer_id,transacted_at,amount
         1,2020-01-01 00:00:00,100

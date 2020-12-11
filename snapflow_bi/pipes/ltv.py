@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-from dags import DataBlock, DataSet, pipe, PipeContext
+from snapflow import DataBlock, pipe, PipeContext
 from lifetimes import BetaGeoFitter, GammaGammaFitter
 from lifetimes.utils import summary_data_from_transaction_data
 
@@ -14,15 +14,21 @@ class LTVConfig:
     annual_discount_rate: float = .2
     future_months_to_project: int = 5 * 12
     observation_period_end: Optional[datetime] = None
+    penalizer_coef: float = .01
 
 
 class LTVModel:
 
+    def __init__(self, penalizer_coef: float = None):
+        if penalizer_coef is None:
+            penalizer_coef = .01
+        self.penalizer_coef = penalizer_coef
+
     def get_spend_model(self):
-        return GammaGammaFitter(penalizer_coef=0.01)
+        return GammaGammaFitter(penalizer_coef=self.penalizer_coef)
 
     def get_recurrence_model(self):
-        return BetaGeoFitter(penalizer_coef=0.01)
+        return BetaGeoFitter(penalizer_coef=self.penalizer_coef)
 
     def fit_spend_model(self, summary):
         returning_txs = summary[summary["frequency"] > 0]
@@ -38,9 +44,9 @@ class LTVModel:
     def compute_ltvs_from_transactions(
         self,
         transactions,
-        customer_id_col="master_customer_id",
-        order_date_col="order_date",
-        order_amount_col="total_price",
+        customer_id_col="customer_id",
+        transaction_date_col="transacted_at",
+        transaction_amount_col="amount",
         future_months_to_project=None,
         annual_discount=None,
         observation_period_end=None,
@@ -53,9 +59,9 @@ class LTVModel:
             annual_discount = 0.2
         summary = summary_data_from_transaction_data(
             transactions,
-            "customer_id",
-            "transacted_at",
-            "amount",
+            customer_id_col,
+            transaction_date_col,
+            transaction_amount_col,
             observation_period_end=observation_period_end,
         )
         sm = self.fit_spend_model(summary)
@@ -77,12 +83,13 @@ class LTVModel:
     module="bi",
     config_class=LTVConfig,
 )
-def transaction_ltv_model(ctx: PipeContext, transactions: DataSet[bi.Transaction]) -> DataSet:
+def transaction_ltv_model(ctx: PipeContext, transactions: DataBlock[bi.Transaction]) -> DataBlock:
     tx_df = transactions.as_dataframe()
+    penalizer_coef = ctx.get_config_value("penalizer_coef")
     discount_rate = ctx.get_config_value("annual_discount_rate")
     future_months_to_project = ctx.get_config_value("future_months_to_project")
     observation_period_end = ctx.get_config_value("observation_period_end")
-    model = LTVModel()
+    model = LTVModel(penalizer_coef=penalizer_coef)
     return model.compute_ltvs_from_transactions(tx_df,
         annual_discount=discount_rate,
         future_months_to_project=future_months_to_project,

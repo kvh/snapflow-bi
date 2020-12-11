@@ -1,4 +1,5 @@
 from typing import TypeVar
+
 from snapflow.core.module import SnapflowModule
 
 from .pipes.ltv import transaction_ltv_model

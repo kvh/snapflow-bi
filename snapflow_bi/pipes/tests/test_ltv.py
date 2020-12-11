@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from snapflow import Environment
-from snapflow.testing.utils import (
-    DataInput,
-    get_tmp_sqlite_db_url,
-    produce_pipe_output_for_static_input,
-)
+from snapflow import Environment, graph, produce
+from snapflow.testing.utils import str_as_dataframe
 
 
 def test_ltv():
     import snapflow_bi as bi
+
     input_data = """
         customer_id,transacted_at,amount
         1,2020-01-01 00:00:00,100
@@ -22,15 +19,16 @@ def test_ltv():
         4,2020-03-01 00:00:00,50
         5,2020-01-01 00:00:00,1000
     """
-    data_input = DataInput(input_data, schema="bi.Transaction")
-    s = get_tmp_sqlite_db_url()
-    md = get_tmp_sqlite_db_url()
-    env = Environment(metadata_storage=md)
-    env.add_module(bi)
-    db = produce_pipe_output_for_static_input(
-        bi.pipes.transaction_ltv_model, input=data_input, env=env, target_storage=s, 
-    )
-    df = db.as_dataframe()
-    assert len(df) == 5
-    assert set(df["customer_id"]) == set(str(i) for i in range(1,6))
+    txs = str_as_dataframe(input_data, nominal_schema=bi.schemas.Transaction)
 
+    env = Environment(metadata_storage="sqlite://")
+    g = graph()
+    df = g.create_node(
+        "core.extract_dataframe", config={"dataframe": txs, "schema": "bi.Transaction"}
+    )
+    ltv = g.create_node(bi.pipes.transaction_ltv_model, upstream=df)
+
+    output = produce(ltv, env=env, modules=[bi])
+    output_df = output.as_dataframe()
+    assert len(output_df) == 5
+    assert set(output_df["customer_id"]) == set(str(i) for i in range(1, 6))

@@ -1,26 +1,37 @@
-Stripe module for the [snapflow](https://github.com/kvh/snapflow) framework.
+Business Intelligence module for the [snapflow](https://github.com/kvh/snapflow) framework.
 
 #### Install
 
-`pip install snapflow-stripe` or `poetry add snapflow-stripe`
+`pip install snapflow-bi` or `poetry add snapflow-bi`
 
 #### Example
 
 ```python
-from snapflow import Graph, produce
-import snapflow_stripe
+import pandas as pd
+import snapflow_bi as bi
+from snapflow import graph, produce
+from snapflow.testing.utils import str_as_dataframe
 
-g = Graph()
+input_data = """
+    customer_id,transacted_at,amount
+    1,2020-01-01 00:00:00,100
+    2,2020-02-01 00:00:00,100
+    2,2020-03-01 00:00:00,100
+    3,2020-01-01 00:00:00,300
+    3,2020-04-01 00:00:00,400
+    4,2020-01-01 00:00:00,100
+    4,2020-02-01 00:00:00,100
+    4,2020-03-01 00:00:00,50
+    5,2020-01-01 00:00:00,1000
+"""
+txs = str_as_dataframe(input_data, nominal_schema=bi.schemas.Transaction)
 
-raw_charges = g.create_node(
-    "stripe.extract_charges",
-    config={"api_key": api_key},
+g = graph()
+df = g.create_node(
+    "core.extract_dataframe", config={"dataframe": txs, "schema": "bi.Transaction"}
 )
-stripe_charges = g.create_node(
-    "stripe.clean_charges", upstream=raw_charges
-)
-output = produce(
-    stripe_charges, g, node_timelimit_seconds=5, modules=[snapflow_stripe]
-)
-records = output.as_records_list()
+ltv = g.create_node(bi.pipes.transaction_ltv_model, upstream=df)
+
+output = produce(ltv, modules=[bi])
+print(output.as_dataframe())
 ```

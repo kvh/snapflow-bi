@@ -31,4 +31,4 @@ def test_ltv():
     output = produce(ltv, env=env, modules=[bi])
     output_df = output.as_dataframe()
     assert len(output_df) == 5
-    assert set(output_df["customer_id"]) == set(str(i) for i in range(1, 6))
+    assert set(output_df["customer_id"]) == set(i for i in range(1, 6))

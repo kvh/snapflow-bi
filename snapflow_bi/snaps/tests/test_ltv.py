@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from snapflow import Environment, graph, produce
-from snapflow.testing.utils import str_as_dataframe
+from snapflow.testing.utils import str_as_dataframe, get_tmp_sqlite_db_url
 
 
 def test_ltv():
@@ -21,7 +21,7 @@ def test_ltv():
     """
     txs = str_as_dataframe(input_data, nominal_schema=bi.schemas.Transaction)
 
-    env = Environment(metadata_storage="sqlite://")
+    env = Environment(metadata_storage=get_tmp_sqlite_db_url())
     g = graph()
     df = g.create_node(
         "core.extract_dataframe", params={"dataframe": txs, "schema": "bi.Transaction"}

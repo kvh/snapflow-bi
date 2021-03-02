@@ -12,9 +12,6 @@ if TYPE_CHECKING:
     from snapflow_bi import Transaction
 
 
-
-
-
 class LTVModel:
     def __init__(self, penalizer_coef: float = None):
         if penalizer_coef is None:

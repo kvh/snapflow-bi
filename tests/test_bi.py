@@ -1,3 +1,6 @@
+from loguru import logger
+logger.enable("snapflow")
+
 def test():
     import snapflow_bi
 

@@ -75,6 +75,7 @@ class LTVModel:
 @Snap(
     "transaction_ltv_model",
     module="bi",
+    display_name="Transaction LTV model"
 )
 @Param("annual_discount_rate", "float", default=0.2)
 @Param("future_months_to_project", "int", default=12*5)

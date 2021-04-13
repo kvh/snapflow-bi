@@ -27,7 +27,7 @@ txs = str_as_dataframe(input_data, nominal_schema=bi.schemas.Transaction)
 
 g = graph()
 df = g.create_node(
-    "core.extract_dataframe", params={"dataframe": txs, "schema": "bi.Transaction"}
+    "core.import_dataframe", params={"dataframe": txs, "schema": "bi.Transaction"}
 )
 ltv = g.create_node(bi.snaps.transaction_ltv_model, upstream=df)
 

@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Optional
 
 from lifetimes import BetaGeoFitter, GammaGammaFitter
 from lifetimes.utils import summary_data_from_transaction_data
-from snapflow import DataBlock, SnapContext, Snap, Param
+from pandas import DataFrame
+from snapflow import DataBlock, Param, Snap, SnapContext
 
 if TYPE_CHECKING:
     from snapflow_bi import Transaction
@@ -53,9 +54,9 @@ class LTVModel:
             annual_discount = 0.2
         summary = summary_data_from_transaction_data(
             transactions,
-            customer_id_col,
-            transaction_date_col,
-            transaction_amount_col,
+            customer_id_col=customer_id_col,
+            datetime_col=transaction_date_col,
+            monetary_value_col=transaction_amount_col,
             observation_period_end=observation_period_end,
         )
         sm = self.fit_spend_model(summary)
@@ -72,18 +73,14 @@ class LTVModel:
         return ltvs.reset_index()
 
 
-@Snap(
-    "transaction_ltv_model",
-    module="bi",
-    display_name="Transaction LTV model"
-)
+@Snap("transaction_ltv_model", module="bi", display_name="Transaction LTV model")
 @Param("annual_discount_rate", "float", default=0.2)
-@Param("future_months_to_project", "int", default=12*5)
+@Param("future_months_to_project", "int", default=12 * 5)
 @Param("observation_period_end", "datetime", required=False)
 @Param("penalizer_coef", "float", default=0.01)
 def transaction_ltv_model(
     ctx: SnapContext, transactions: DataBlock[Transaction]
-) -> DataBlock:
+) -> DataFrame:
     tx_df = transactions.as_dataframe()
     penalizer_coef = ctx.get_param("penalizer_coef")
     discount_rate = ctx.get_param("annual_discount_rate")

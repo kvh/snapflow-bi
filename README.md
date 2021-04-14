@@ -31,6 +31,6 @@ df = g.create_node(
 )
 ltv = g.create_node(bi.snaps.transaction_ltv_model, upstream=df)
 
-output = produce(ltv, modules=[bi])
-print(output.as_dataframe())
+blocks = produce(ltv, modules=[bi])
+print(blocks[0].as_dataframe())
 ```

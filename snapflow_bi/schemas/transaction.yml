@@ -5,16 +5,16 @@ description: >
 immutable: true
 fields:
   customer_id:
-    type: Unicode(256)
+    type: Text
     validators:
       - NotNull
   product_id:
-    type: Unicode(256)
+    type: Text
   transacted_at:
     type: DateTime
     validators:
       - NotNull
   amount:
-    type: Numeric(12, 2)
+    type: Decimal(12, 2)
     validators:
       - NotNull

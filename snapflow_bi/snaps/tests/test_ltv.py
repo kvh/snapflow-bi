@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from dcp.storage.database.utils import get_tmp_sqlite_db_url
 from snapflow import Environment, graph, produce
-from snapflow.testing.utils import str_as_dataframe, get_tmp_sqlite_db_url
+from snapflow.testing.utils import str_as_dataframe
 
 
 def test_ltv():
@@ -19,16 +20,16 @@ def test_ltv():
         4,2020-03-01 00:00:00,50
         5,2020-01-01 00:00:00,1000
     """
-    txs = str_as_dataframe(input_data, nominal_schema=bi.schemas.Transaction)
-
     env = Environment(metadata_storage=get_tmp_sqlite_db_url())
+    txs = str_as_dataframe(env, input_data, nominal_schema=bi.schemas.Transaction)
+
     g = graph()
     df = g.create_node(
         "core.import_dataframe", params={"dataframe": txs, "schema": "bi.Transaction"}
     )
     ltv = g.create_node(bi.snaps.transaction_ltv_model, upstream=df)
 
-    output = produce(ltv, env=env, modules=[bi])
-    output_df = output.as_dataframe()
+    blocks = produce(ltv, env=env, modules=[bi])
+    output_df = blocks[0].as_dataframe()
     assert len(output_df) == 5
     assert set(output_df["customer_id"]) == set(i for i in range(1, 6))

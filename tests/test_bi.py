@@ -4,9 +4,9 @@ logger.enable("snapflow")
 
 
 def test():
-    import snapflow_bi
+    from snapflow_bi import module as bi
 
-    snapflow_bi.run_tests()
+    bi.run_tests()
 
 
 if __name__ == "__main__":

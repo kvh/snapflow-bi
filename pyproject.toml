@@ -3,12 +3,12 @@ authors = ["Ken Van Haren <kenvanharen@gmail.com>"]
 description = "Business Intelligence module for snapflow"
 license = "BSD-3-Clause"
 name = "snapflow-bi"
-version = "0.3.1"
+version = "0.3.2"
 
 [tool.poetry.dependencies]
 Lifetimes = "^0.11.3"
 python = "^3.7.4"
-snapflow = "^0.5.0"
+snapflow = "^0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
